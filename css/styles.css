@@ -1,0 +1,937 @@
+/* ==========================================================================
+   AstroLaser Kids - Estilos Principales
+   Diseñado para Navegador Web y Pizarras Digitales Interactivas (Smart Boards)
+   ========================================================================== */
+
+:root {
+    --bg-space: #070B14;
+    --bg-card: rgba(15, 23, 42, 0.85);
+    --bg-card-hover: rgba(30, 41, 59, 0.9);
+    --border-glow: rgba(56, 189, 248, 0.3);
+    
+    --color-primary: #38BDF8;
+    --color-up: #FACC15;      /* Arriba - Amarillo Sol */
+    --color-down: #A855F7;    /* Abajo - Púrpura Nebulosa */
+    --color-left: #06B6D4;    /* Izquierda - Cyan Espacial */
+    --color-right: #F97316;   /* Derecha - Naranja Láser */
+    
+    --color-success: #10B981;
+    --color-danger: #EF4444;
+    --color-warning: #F59E0B;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+
+    --font-heading: 'Fredoka', 'Nunito', system-ui, sans-serif;
+    --font-body: 'Nunito', system-ui, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+body {
+    background-color: var(--bg-space);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   BARRA SUPERIOR (NAVBAR)
+   Botones grandes y táctiles aptos para Pizarras Digitales
+   ========================================================================== */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(11, 15, 25, 0.95);
+    border-bottom: 2px solid var(--border-glow);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    font-size: 2.2rem;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8));
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.brand-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #38BDF8 0%, #A855F7 50%, #F43F5E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    padding: 6px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #0284C7, #2563EB);
+    color: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.action-btn {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: rgba(51, 65, 85, 0.9);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   VISTAS (CONTENEDORES)
+   ========================================================================== */
+.view-container {
+    display: none;
+    flex: 1;
+    position: relative;
+}
+
+.view-container.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   VISTA DEL JUEGO (GAME VIEW)
+   ========================================================================== */
+#game-view {
+    height: calc(100vh - 75px);
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+
+.game-canvas-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* HUD Superior en Juego */
+.game-hud {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.hud-player-badge {
+    background: rgba(15, 23, 42, 0.88);
+    border: 2px solid rgba(56, 189, 248, 0.4);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 8px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    pointer-events: auto;
+}
+
+.player-avatar {
+    font-size: 1.8rem;
+}
+
+.player-name {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.player-group {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+}
+
+.hud-center-prompt {
+    background: rgba(15, 23, 42, 0.92);
+    border: 3px solid #FACC15;
+    border-radius: 24px;
+    padding: 10px 32px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(250, 204, 21, 0.35);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(250, 204, 21, 0.6); }
+}
+
+.hud-prompt-title {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #FACC15;
+    letter-spacing: 1px;
+}
+
+.hud-prompt-sub {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #E2E8F0;
+    margin-top: 2px;
+}
+
+.hud-metrics {
+    display: flex;
+    gap: 12px;
+}
+
+.metric-pill {
+    background: rgba(15, 23, 42, 0.88);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    padding: 8px 16px;
+    text-align: center;
+    min-width: 85px;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.metric-val {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+/* Panel PIP de Cámara (Miniatura con feedback corporal) */
+.camera-pip {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 220px;
+    height: 165px;
+    background: #000;
+    border: 3px solid var(--color-primary);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    z-index: 20;
+    transition: all 0.3s ease;
+}
+
+.camera-pip.minimized {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.camera-pip video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Efecto espejo */
+}
+
+.camera-badge {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.65);
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #10B981;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.camera-status-dot {
+    width: 7px;
+    height: 7px;
+    background: #10B981;
+    border-radius: 50%;
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Barra de control flotante en la parte inferior */
+.game-bottom-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 10px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    z-index: 15;
+}
+
+.game-btn {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.game-btn-primary {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #FFF;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.game-btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.game-btn-secondary {
+    background: rgba(51, 65, 85, 0.8);
+    color: #FFF;
+}
+
+.game-btn-secondary:hover {
+    background: rgba(71, 85, 105, 0.9);
+}
+
+/* ==========================================================================
+   MODAL DE SELECCIÓN DE ESTUDIANTE Y MODO
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(4, 7, 15, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-window {
+    background: #0F172A;
+    border: 2px solid var(--border-glow);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.6rem;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close-btn:hover {
+    color: #FFF;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Cuadrículas de selección */
+.mode-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.mode-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mode-card:hover {
+    border-color: var(--color-primary);
+    background: rgba(30, 41, 59, 0.9);
+    transform: translateY(-2px);
+}
+
+.mode-card.selected {
+    border-color: var(--color-primary);
+    background: rgba(14, 165, 233, 0.15);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+}
+
+.mode-icon {
+    font-size: 2rem;
+}
+
+.mode-name {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #FFF;
+}
+
+.mode-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.student-list-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.student-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-picker-item:hover {
+    border-color: var(--color-primary);
+    background: rgba(51, 65, 85, 0.8);
+}
+
+.student-picker-item.selected {
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-avatar {
+    font-size: 1.6rem;
+}
+
+.student-name {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* ==========================================================================
+   VISTA DE REPORTES Y ANALÍTICAS (REPORT VIEW)
+   Panel completo para docentes y psicopedagogos
+   ========================================================================== */
+.reports-layout {
+    padding: 24px;
+    max-width: 1300px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.reports-header-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glow);
+    border-radius: 20px;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.reports-header-title h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.reports-header-title p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+
+.reports-filters {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    background: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFF;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    border-color: var(--color-primary);
+}
+
+/* Grillas de Estadísticas */
+.stats-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-title {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.stat-value {
+    font-family: var(--font-heading);
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+/* Contenedores de Gráficos y Tablas */
+.reports-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.report-panel {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.report-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+}
+
+.panel-title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Barras de Lateralidad y Direcciones */
+.directions-bars-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+.dir-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dir-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.dir-bar-track {
+    background: rgba(30, 41, 59, 0.8);
+    height: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.dir-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Recomendaciones Pedagógicas */
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tip-card {
+    background: rgba(30, 41, 59, 0.5);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 8px 12px 12px 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tip-card.warning { border-left-color: var(--color-warning); background: rgba(245, 158, 11, 0.08); }
+.tip-card.alert { border-left-color: var(--color-danger); background: rgba(239, 68, 68, 0.08); }
+.tip-card.success { border-left-color: var(--color-success); background: rgba(16, 185, 129, 0.08); }
+.tip-card.star { border-left-color: #8B5CF6; background: rgba(139, 92, 246, 0.08); }
+
+.tip-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    color: #FFFFFF;
+}
+
+.tip-text {
+    font-size: 0.88rem;
+    color: #CBD5E1;
+    line-height: 1.4;
+}
+
+/* Tabla de Estudiantes */
+.students-table-wrapper {
+    overflow-x: auto;
+}
+
+.students-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.students-table th {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.students-table td {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.students-table tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ==========================================================================
+   VISTA DE GESTIÓN DE ESTUDIANTES Y AULAS
+   ========================================================================== */
+.management-layout {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.form-input {
+    background: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #FFF;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+/* ==========================================================================
+   MODAL DE FIN DE PARTIDA (VICTORY SCREEN)
+   ========================================================================== */
+.victory-modal-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.victory-trophy {
+    font-size: 4rem;
+    animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: scale(1); }
+    to { transform: scale(1.15) rotate(5deg); }
+}
+
+.victory-score-badge {
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(249, 115, 22, 0.2));
+    border: 2px solid #FACC15;
+    border-radius: 20px;
+    padding: 12px 28px;
+}
+
+.victory-score-num {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #FACC15;
+}
+
+/* ==========================================================================
+   ESTILOS DE IMPRESIÓN (PDF Y REPORTES ESCOLARES)
+   ========================================================================== */
+@media print {
+    body {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+    }
+
+    .navbar, .game-hud, .camera-pip, .game-bottom-bar, .nav-actions, .filter-select, .action-btn {
+        display: none !important;
+    }
+
+    .reports-layout {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .report-panel, .reports-header-card, .stat-card {
+        background: #FFFFFF !important;
+        border: 1px solid #CCCCCC !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .stat-value, .panel-title, .tip-title, h2, h3 {
+        color: #000000 !important;
+    }
+
+    .dir-bar-track {
+        background: #EEEEEE !important;
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (Tablets y Pizarras Widescreen)
+   ========================================================================== */
+@media (max-width: 900px) {
+    .reports-main-grid {
+        grid-template-columns: 1fr;
+    }
+    .stats-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .hud-prompt-title {
+        font-size: 1.3rem;
+    }
+    .camera-pip {
+        width: 140px;
+        height: 105px;
+    }
+}
