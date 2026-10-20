@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AstroLaser Kids - Juego Espacial de Lateralidad y Cognición</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- MediaPipe Pose & Camera Utils CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR (APTA PARA PIZARRA DIGITAL) -->
+    <header class="navbar">
+        <div class="brand">
+            <span class="brand-logo">⚡</span>
+            <div>
+                <h1 class="brand-title">AstroLaser Kids</h1>
+            </div>
+        </div>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="game">
+                <span>🎮</span> Misión Espacial
+            </button>
+            <button class="tab-btn" data-tab="reports">
+                <span>📊</span> Reportes del Grupo
+            </button>
+            <button class="tab-btn" data-tab="management">
+                <span>👥</span> Alumnos y Aulas
+            </button>
+        </nav>
+
+        <div class="nav-actions">
+            <button class="action-btn" id="btn-toggle-sound" title="Alternar Sonido y Voz">🔊</button>
+            <button class="action-btn" id="btn-fullscreen" title="Pantalla Completa (Pizarra Digital)">⛶ Pantalla Completa</button>
+        </div>
+    </header>
+
+    <!-- ====================================================================
+         1. VISTA DEL JUEGO (GAME VIEW)
+         ==================================================================== -->
+    <main id="game-view" class="view-container active">
+        <div class="game-canvas-wrapper">
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <!-- HUD Superior -->
+        <div class="game-hud">
+            <div class="hud-player-badge">
+                <span class="player-avatar" id="hud-student-avatar">🚀</span>
+                <div>
+                    <div class="player-name" id="hud-student-name">Mateo González</div>
+                    <div class="player-group" id="hud-student-group">1º Primaria - Grupo A</div>
+                </div>
+            </div>
+
+            <div class="hud-center-prompt">
+                <div class="hud-prompt-title" id="hud-prompt-title">¡DISPARA AL ELEFANTE!</div>
+                <div class="hud-prompt-sub" id="hud-prompt-sub">🐘 Está en la IZQUIERDA ◄ (Mueve tus brazos)</div>
+            </div>
+
+            <div class="hud-metrics">
+                <div class="metric-pill">
+                    <div class="metric-label">Puntos</div>
+                    <div class="metric-val" id="hud-score" style="color: #38BDF8;">0</div>
+                </div>
+                <div class="metric-pill">
+                    <div class="metric-label">Racha</div>
+                    <div class="metric-val" id="hud-combo" style="color: #FACC15;">x0</div>
+                </div>
+                <div class="metric-pill">
+                    <div class="metric-label">Tiempo</div>
+                    <div class="metric-val" id="hud-time" style="color: #F43F5E;">60s</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Miniatura PIP de la Cámara Web -->
+        <div class="camera-pip" id="camera-pip-container">
+            <div class="camera-badge" id="camera-status-badge">
+                <span class="camera-status-dot"></span>
+                <span id="camera-status-text">CÁMARA ACTIVA</span>
+            </div>
+            <video id="webcam-video" autoplay playsinline muted></video>
+        </div>
+
+        <!-- Barra de Control Flotante Inferior -->
+        <div class="game-bottom-bar">
+            <button class="game-btn game-btn-primary" id="btn-play-game">
+                <span>🚀</span> Iniciar Misión / Cambiar Alumno
+            </button>
+            <button class="game-btn game-btn-secondary" id="btn-toggle-camera">
+                <span>📷</span> Alternar Cámara
+            </button>
+        </div>
+    </main>
+
+    <!-- ====================================================================
+         2. VISTA DE REPORTES Y ANALÍTICAS (REPORTS VIEW)
+         ==================================================================== -->
+    <section id="reports-view" class="view-container">
+        <div class="reports-layout">
+            
+            <!-- Cabecera de Reportes -->
+            <div class="reports-header-card">
+                <div class="reports-header-title">
+                    <h2>📊 Panel Psicopedagógico y Reportes de Lateralidad</h2>
+                    <p>Monitoreo del dominio espacial (Izquierda, Derecha, Arriba, Abajo) y funciones cognitivas.</p>
+                </div>
+                <div class="reports-filters">
+                    <select class="filter-select" id="filter-report-group">
+                        <option value="all">Todos los Grupos</option>
+                    </select>
+
+                    <select class="filter-select" id="filter-report-student">
+                        <option value="all">👥 Vista General del Grupo</option>
+                    </select>
+
+                    <button class="action-btn" id="btn-print-report" style="background: #2563EB;">
+                        🖨️ Imprimir / Guardar PDF
+                    </button>
+                    <button class="action-btn" id="btn-export-json">
+                        💾 Respaldar Datos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Métricas Clave de Desempeño -->
+            <div class="stats-overview-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8;">👥</div>
+                    <div class="stat-info">
+                        <span class="stat-title">Estudiantes Evaluados</span>
+                        <span class="stat-value" id="report-stat-total-students">4</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981;">🎯</div>
+                    <div class="stat-info">
+                        <span class="stat-title">Precisión Global</span>
+                        <span class="stat-value" id="report-stat-accuracy" style="color: #10B981;">84%</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(250, 204, 21, 0.15); color: #FACC15;">⚡</div>
+                    <div class="stat-info">
+                        <span class="stat-title">Tiempo Reacción Prom.</span>
+                        <span class="stat-value" id="report-stat-reaction">1240 ms</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #A855F7;">🏆</div>
+                    <div class="stat-info">
+                        <span class="stat-title">Misiones Jugadas</span>
+                        <span class="stat-value" id="report-stat-sessions">8</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Lateralidad y Recomendaciones Pedagógicas -->
+            <div class="reports-main-grid">
+                
+                <!-- Desglose por Dirección -->
+                <div class="report-panel">
+                    <div class="report-panel-header">
+                        <h3 class="panel-title">🧭 Dominio Espacial por Dirección</h3>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">% Aciertos acumulados</span>
+                    </div>
+                    <div class="directions-bars-container" id="report-direction-bars">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Diagnóstico y Sugerencias Pedagógicas -->
+                <div class="report-panel">
+                    <div class="report-panel-header">
+                        <h3 class="panel-title">💡 Diagnóstico Pedagógico y Sugerencias</h3>
+                        <span style="font-size: 0.85rem; color: #10B981;">Análisis Automático</span>
+                    </div>
+                    <div class="recommendations-list" id="report-pedagogical-tips">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tabla de Resultados de Estudiantes -->
+            <div class="report-panel">
+                <div class="report-panel-header">
+                    <h3 class="panel-title">📋 Registro y Comparativa de Estudiantes</h3>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Haz clic en un alumno para ver su ficha individual</span>
+                </div>
+                <div class="students-table-wrapper">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Edad</th>
+                                <th>Precisión</th>
+                                <th>Reacción</th>
+                                <th>Lateralidad (Izq / Der)</th>
+                                <th>Sesiones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-students-table-body">
+                            <!-- Generado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ====================================================================
+         3. VISTA DE GESTIÓN DE ALUMNOS (MANAGEMENT VIEW)
+         ==================================================================== -->
+    <section id="management-view" class="view-container">
+        <div class="management-layout">
+            
+            <div class="report-panel">
+                <div class="report-panel-header">
+                    <h3 class="panel-title">➕ Registrar Nuevo Estudiante</h3>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo del Niño(a)</label>
+                        <input type="text" id="input-student-name" class="form-input" placeholder="Ej: Camilo Torres">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Edad (años)</label>
+                        <input type="number" id="input-student-age" class="form-input" value="6" min="3" max="15">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Grupo / Aula Escolar</label>
+                        <select id="input-student-group" class="filter-select" style="width: 100%;">
+                            <!-- Opciones dinámicas -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Avatar Espacial</label>
+                        <select id="input-student-avatar" class="filter-select" style="width: 100%;">
+                            <option value="🚀">🚀 Cohete Veloz</option>
+                            <option value="⭐">⭐ Estrella Guía</option>
+                            <option value="🤖">🤖 Robot Cyber</option>
+                            <option value="👾">👾 Marcianito Amigo</option>
+                            <option value="🪐">🪐 Explorador de Saturno</option>
+                            <option value="🛸">🛸 Platillo Volador</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Observaciones de Psicomotricidad / Lateralidad</label>
+                    <input type="text" id="input-student-notes" class="form-input" placeholder="Ej: Diestro, en proceso de afianzar noción de izquierda">
+                </div>
+
+                <button class="game-btn game-btn-primary" id="btn-add-student" style="align-self: flex-start;">
+                    💾 Guardar y Registrar Estudiante
+                </button>
+            </div>
+
+            <!-- Listado de Estudiantes Actuales -->
+            <div class="report-panel">
+                <div class="report-panel-header">
+                    <h3 class="panel-title">👥 Directorio del Alumnado</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px;" id="management-student-list">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ====================================================================
+         MODAL: CONFIGURACIÓN E INICIO DE PARTIDA
+         ==================================================================== -->
+    <div class="modal-overlay" id="setup-modal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 class="modal-title">🚀 Configurar Misión Espacial</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+
+            <!-- 1. Seleccionar Alumno -->
+            <div>
+                <label class="form-label" style="margin-bottom: 8px; display: block;">1. Selecciona al Estudiante:</label>
+                <div class="student-list-picker" id="modal-student-list">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- 2. Seleccionar Modo de Juego -->
+            <div>
+                <label class="form-label" style="margin-bottom: 8px; display: block;">2. Objetivo de Aprendizaje / Área Cognitiva:</label>
+                <div class="mode-cards">
+                    <div class="mode-card selected" data-mode="directions">
+                        <span class="mode-icon">🐾</span>
+                        <span class="mode-name">Rescate de Animales (Lateralidad)</span>
+                        <span class="mode-desc">¡Dispara al Elefante, Koala, Gorila, Zorrito o Hurón según su posición!</span>
+                    </div>
+
+                    <div class="mode-card" data-mode="colors_shapes">
+                        <span class="mode-icon">🎨</span>
+                        <span class="mode-name">Radar de Formas</span>
+                        <span class="mode-desc">Atención selectiva, colores y discriminación visual.</span>
+                    </div>
+
+                    <div class="mode-card" data-mode="numbers">
+                        <span class="mode-icon">🔢</span>
+                        <span class="mode-name">Reactor Numérico</span>
+                        <span class="mode-desc">Cálculo mental rápido y números mayores/menores.</span>
+                    </div>
+
+                    <div class="mode-card" data-mode="sequences">
+                        <span class="mode-icon">🧩</span>
+                        <span class="mode-name">Secuencia Cósmica</span>
+                        <span class="mode-desc">Memoria de trabajo motriz (estilo Simon Dice).</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Duración -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <label class="form-label">Duración de la Misión:</label>
+                    <select id="select-game-duration" class="filter-select" style="margin-top: 4px;">
+                        <option value="45">45 Segundos (Rápido)</option>
+                        <option value="60" selected>60 Segundos (Recomendado)</option>
+                        <option value="90">90 Segundos (Extendido)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 14px;">
+                    <button class="game-btn game-btn-secondary modal-cancel-btn">Cancelar</button>
+                    <button class="game-btn game-btn-primary" id="btn-confirm-start">¡Comenzar!</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         MODAL: FIN DE MISIÓN (VICTORY SCREEN)
+         ==================================================================== -->
+    <div class="modal-overlay" id="victory-modal">
+        <div class="modal-window" style="max-width: 520px;">
+            <div class="victory-modal-content">
+                <div class="victory-trophy">🏆</div>
+                <h2 style="font-family: var(--font-heading); font-size: 2.2rem; color: #FFFFFF;">¡Misión Completada!</h2>
+                
+                <div class="victory-score-badge">
+                    <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700;">PUNTAJE OBTENIDO</div>
+                    <div class="victory-score-num" id="victory-score-num">1850</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%;">
+                    <div class="metric-pill">
+                        <div class="metric-label">Precisión</div>
+                        <div class="metric-val" id="victory-accuracy" style="color: #10B981;">92%</div>
+                    </div>
+                    <div class="metric-pill">
+                        <div class="metric-label">Mejor Racha</div>
+                        <div class="metric-val" id="victory-combo" style="color: #FACC15;">x8</div>
+                    </div>
+                    <div class="metric-pill">
+                        <div class="metric-label">Tiempo Reacción</div>
+                        <div class="metric-val" id="victory-reaction" style="color: #38BDF8;">1.1s</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; width: 100%; margin-top: 14px;">
+                    <button class="game-btn game-btn-secondary" id="btn-victory-report" style="flex: 1; justify-content: center;">
+                        📊 Ver Reporte
+                    </button>
+                    <button class="game-btn game-btn-primary" id="btn-victory-retry" style="flex: 1; justify-content: center;">
+                        🔄 Jugar Otra Vez
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la Aplicación -->
+    <script src="js/audio.js"></script>
+    <script src="js/pose_tracker.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
