@@ -46,10 +46,10 @@ class AstroGame {
 
         // Zonas de dirección
         this.zones = {
-            up:    { id: 'up',    name: 'ARRIBA',    label: 'ARRIBA',    color: '#FACC15', icon: '▲' },
-            down:  { id: 'down',  name: 'ABAJO',     label: 'ABAJO',     color: '#A855F7', icon: '▼' },
-            left:  { id: 'left',  name: 'IZQUIERDA', label: 'IZQUIERDA', color: '#06B6D4', icon: '◄' },
-            right: { id: 'right', name: 'DERECHA',   label: 'DERECHA',   color: '#F97316', icon: '►' }
+            up:    { id: 'up',    name: 'ARRIBA',    label: 'ARRIBA',    phrase: 'arriba',         color: '#FACC15', icon: '▲' },
+            down:  { id: 'down',  name: 'ABAJO',     label: 'ABAJO',     phrase: 'abajo',          color: '#A855F7', icon: '▼' },
+            left:  { id: 'left',  name: 'IZQUIERDA', label: 'IZQUIERDA', phrase: 'a la izquierda', color: '#06B6D4', icon: '◄' },
+            right: { id: 'right', name: 'DERECHA',   label: 'DERECHA',   phrase: 'a la derecha',   color: '#F97316', icon: '►' }
         };
 
         // Catálogo de Animales Interactivos con 2 estados:
@@ -343,11 +343,12 @@ class AstroGame {
             });
 
             this.currentTarget = targetDir;
-            // En vez de decir la dirección, anuncia el animal que está en ese lugar
-            this.promptText = `¡DISPARA ${targetAnimal.article.toUpperCase()} ${targetAnimal.name.toUpperCase()}!`;
-            this.promptSubtext = `${targetAnimal.icon} Está en la ${zoneInfo.name} ${zoneInfo.icon}`;
+            // Anuncia claramente tanto el animal como el lado: si arriba o abajo, izquierda o derecha
+            this.promptText = `¡DISPARA ${targetAnimal.article.toUpperCase()} ${targetAnimal.name.toUpperCase()} (${zoneInfo.name})!`;
+            this.promptSubtext = `${targetAnimal.icon} Está ubicado ${zoneInfo.phrase.toUpperCase()} ${zoneInfo.icon}`;
 
-            window.soundCtrl.speak(`¡Dispara ${targetAnimal.article} ${targetAnimal.name.toLowerCase()}!`, true);
+            // Locución por voz: anuncia el animal Y el lado exacto
+            window.soundCtrl.speak(`¡Dispara ${targetAnimal.article} ${targetAnimal.name.toLowerCase()} que está ${zoneInfo.phrase}!`, true);
         }
         else if (this.currentMode === 'colors_shapes') {
             // Misión 2: Radar de Formas y Colores (Atención Selectiva)
@@ -363,6 +364,7 @@ class AstroGame {
             const targetIdx = Math.floor(Math.random() * 4);
             const correctShape = shuffledShapes[targetIdx];
             const targetDir = dirs[targetIdx];
+            const zoneInfo = this.zones[targetDir];
 
             dirs.forEach((d, idx) => {
                 const shapeItem = shuffledShapes[idx];
@@ -382,10 +384,10 @@ class AstroGame {
             });
 
             this.currentTarget = targetDir;
-            this.promptText = `¡${correctShape.name.toUpperCase()} ${correctShape.colorName.toUpperCase()}!`;
-            this.promptSubtext = `Encuéntrala en: ${this.zones[targetDir].name}`;
+            this.promptText = `¡${correctShape.name.toUpperCase()} ${correctShape.colorName.toUpperCase()} (${zoneInfo.name})!`;
+            this.promptSubtext = `Encuéntrala ${zoneInfo.phrase.toUpperCase()} ${zoneInfo.icon}`;
 
-            window.soundCtrl.speak(`¡Busca la ${correctShape.name} ${correctShape.colorName}!`, true);
+            window.soundCtrl.speak(`¡Busca la ${correctShape.name} ${correctShape.colorName} que está ${zoneInfo.phrase}!`, true);
         }
         else if (this.currentMode === 'numbers') {
             // Misión 3: Reactor Numérico (Cálculo y Razonamiento)
@@ -400,6 +402,7 @@ class AstroGame {
             const targetNumber = sorted[0];
             const targetIdx = nums.indexOf(targetNumber);
             const targetDir = dirs[targetIdx];
+            const zoneInfo = this.zones[targetDir];
 
             dirs.forEach((d, idx) => {
                 this.targets.push({
@@ -417,10 +420,10 @@ class AstroGame {
             });
 
             this.currentTarget = targetDir;
-            this.promptText = `¡NÚMERO ${ruleType.toUpperCase()}!`;
-            this.promptSubtext = `Encuentra el número ${ruleType}: [${targetNumber}]`;
+            this.promptText = `¡NÚMERO ${ruleType.toUpperCase()} (${zoneInfo.name})!`;
+            this.promptSubtext = `Encuentra el número ${ruleType} [${targetNumber}] ${zoneInfo.phrase.toUpperCase()} ${zoneInfo.icon}`;
 
-            window.soundCtrl.speak(`¡Dispara al número ${ruleType}!`, true);
+            window.soundCtrl.speak(`¡Dispara al número ${ruleType} que está ${zoneInfo.phrase}!`, true);
         }
         else if (this.currentMode === 'sequences') {
             // Misión 4: Secuencia Cósmica (Memoria de Trabajo)
@@ -657,11 +660,16 @@ class AstroGame {
 
         this.screenShake = 12;
         window.soundCtrl.playExplosion();
-        window.soundCtrl.playSuccess();
-
-        // Felicitaciones habladas personalizadas con el animal
         if (target.animal) {
-            window.soundCtrl.speak(`¡Excelente! ¡El ${target.animal.name.toLowerCase()} está muy feliz!`, true);
+            window.soundCtrl.playAnimalCheer();
+        } else {
+            window.soundCtrl.playSuccess();
+        }
+
+        // Felicitaciones habladas personalizadas con el animal y su lado
+        if (target.animal) {
+            const dirPhrase = this.zones[target.direction].phrase;
+            window.soundCtrl.speak(`¡Excelente! ¡El ${target.animal.name.toLowerCase()} ${dirPhrase} está muy feliz!`, true);
         } else {
             const praises = ["¡Excelente!", "¡Muy bien!", "¡Increíble!", "¡Directo al blanco!", "¡Super reflejos!"];
             const praise = praises[Math.floor(Math.random() * praises.length)];
@@ -679,16 +687,16 @@ class AstroGame {
         this.addFloatingText("¡Cerca!", target.x, target.y, '#EF4444');
         window.soundCtrl.playError();
 
-        // Mensaje de aliento didáctico
+        // Mensaje de aliento didáctico indicando claramente el animal y su lado
         const hitAnimalName = target.animal ? target.animal.name : '';
         const correctTarget = this.targets.find(t => t.direction === this.currentTarget);
         const correctAnimalName = correctTarget && correctTarget.animal ? correctTarget.animal.name : '';
         const correctZone = this.zones[this.currentTarget];
 
         if (hitAnimalName && correctAnimalName && correctZone) {
-            window.soundCtrl.speak(`¡Ese es el ${hitAnimalName}! Busca al ${correctAnimalName} en la ${correctZone.name}!`, true);
+            window.soundCtrl.speak(`¡Ese es el ${hitAnimalName}! Busca al ${correctAnimalName} que está ${correctZone.phrase}!`, true);
         } else if (correctZone) {
-            window.soundCtrl.speak(`Era hacia ${correctZone.name}. ¡Inténtalo de nuevo!`, true);
+            window.soundCtrl.speak(`Era ${correctZone.phrase}. ¡Inténtalo de nuevo!`, true);
         }
 
         setTimeout(() => this.nextRound(), 1000);
@@ -795,42 +803,50 @@ class AstroGame {
 
     renderDirectionMarkers() {
         // Indicadores gigantes en los 4 bordes para fijación cognitiva en la Pizarra Digital
-        const time = performance.now() * 0.003;
-
         // ARRIBA
-        this.drawDirectionBadge(this.width / 2, 38, '▲ ARRIBA', this.zones.up.color);
+        this.drawDirectionBadge(this.width / 2, 38, '▲ ARRIBA', this.zones.up.color, false, this.currentTarget === 'up');
         // ABAJO
-        this.drawDirectionBadge(this.width / 2, this.height - 38, '▼ ABAJO', this.zones.down.color);
+        this.drawDirectionBadge(this.width / 2, this.height - 38, '▼ ABAJO', this.zones.down.color, false, this.currentTarget === 'down');
         // IZQUIERDA
-        this.drawDirectionBadge(50, this.height / 2, '◄ IZQUIERDA', this.zones.left.color, true);
+        this.drawDirectionBadge(50, this.height / 2, '◄ IZQUIERDA', this.zones.left.color, true, this.currentTarget === 'left');
         // DERECHA
-        this.drawDirectionBadge(this.width - 50, this.height / 2, 'DERECHA ►', this.zones.right.color, true);
+        this.drawDirectionBadge(this.width - 50, this.height / 2, 'DERECHA ►', this.zones.right.color, true, this.currentTarget === 'right');
     }
 
-    drawDirectionBadge(x, y, text, color, isVertical = false) {
+    drawDirectionBadge(x, y, text, color, isVertical = false, isTarget = false) {
         this.ctx.save();
         this.ctx.translate(x, y);
         if (isVertical) {
             this.ctx.rotate(x < this.width / 2 ? -Math.PI / 2 : Math.PI / 2);
         }
 
+        if (isTarget) {
+            const pulse = 1 + Math.sin(performance.now() * 0.008) * 0.08;
+            this.ctx.scale(pulse, pulse);
+        }
+
         this.ctx.font = 'bold 16px "Fredoka", "Nunito", sans-serif';
-        const textWidth = this.ctx.measureText(text).width;
+        const displayText = isTarget ? `🎯 ${text} 🎯` : text;
+        const textWidth = this.ctx.measureText(displayText).width;
         const padX = 14;
         const padY = 8;
 
-        this.ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        this.ctx.fillStyle = isTarget ? 'rgba(30, 41, 59, 0.95)' : 'rgba(15, 23, 42, 0.85)';
         this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = isTarget ? 4 : 2;
+        if (isTarget) {
+            this.ctx.shadowColor = color;
+            this.ctx.shadowBlur = 22;
+        }
         this.ctx.beginPath();
         this.ctx.roundRect(-textWidth/2 - padX, -16 - padY, textWidth + padX * 2, 32 + padY, 12);
         this.ctx.fill();
         this.ctx.stroke();
 
-        this.ctx.fillStyle = color;
+        this.ctx.fillStyle = isTarget ? '#FFFFFF' : color;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(text, 0, 0);
+        this.ctx.fillText(displayText, 0, 0);
 
         this.ctx.restore();
     }
@@ -849,13 +865,25 @@ class AstroGame {
                 const img = isHit ? t.animal.hitImg : t.animal.idleImg;
                 const ringColor = isHit ? '#10B981' : t.color;
 
+                // Si es el objetivo actual y aún no ha sido alcanzado, dibujar halo orbital pulsante
+                if (t.isCorrect && !isHit) {
+                    const targetPulse = Math.sin(time * 3) * 6;
+                    this.ctx.beginPath();
+                    this.ctx.arc(t.x, t.y, r + 15 + targetPulse, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = ringColor;
+                    this.ctx.setLineDash([8, 6]);
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+                    this.ctx.setLineDash([]);
+                }
+
                 // Anillo exterior brillante
                 this.ctx.beginPath();
                 this.ctx.arc(t.x, t.y, r + 8, 0, Math.PI * 2);
                 this.ctx.strokeStyle = ringColor;
-                this.ctx.lineWidth = isHit ? 6 : 4;
+                this.ctx.lineWidth = isHit ? 6 : (t.isCorrect ? 5 : 4);
                 this.ctx.shadowColor = ringColor;
-                this.ctx.shadowBlur = isHit ? 26 : 16;
+                this.ctx.shadowBlur = isHit ? 26 : (t.isCorrect ? 22 : 16);
                 this.ctx.stroke();
 
                 // Fondo blanco circular para el retrato
@@ -894,8 +922,9 @@ class AstroGame {
                     this.drawCelebrationSparkles(t.x, t.y, r);
                 }
 
-                // Placa inferior con el nombre del animal y su icono
-                this.drawAnimalBadge(t.x, t.y + r + 22, `${t.animal.icon} ${t.animal.name.toUpperCase()}`, ringColor);
+                // Placa inferior con el nombre del animal y su lado (ej: 🐘 ELEFANTE · IZQUIERDA ◄)
+                const badgeText = `${t.animal.icon} ${t.animal.name.toUpperCase()} · ${this.zones[t.direction].name} ${this.zones[t.direction].icon}`;
+                this.drawAnimalBadge(t.x, t.y + r + 22, badgeText, ringColor, t.isCorrect);
             } else {
                 // Modo estándar (Formas geométricas / números)
                 this.ctx.beginPath();
@@ -939,22 +968,26 @@ class AstroGame {
         });
     }
 
-    drawAnimalBadge(x, y, text, color) {
+    drawAnimalBadge(x, y, text, color, isTarget = false) {
         this.ctx.save();
         this.ctx.font = 'bold 15px "Fredoka", sans-serif';
         const textWidth = this.ctx.measureText(text).width;
         const padX = 14;
         const padY = 6;
 
-        this.ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        this.ctx.fillStyle = isTarget ? 'rgba(30, 41, 59, 0.96)' : 'rgba(15, 23, 42, 0.92)';
         this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = isTarget ? 3 : 2;
+        if (isTarget) {
+            this.ctx.shadowColor = color;
+            this.ctx.shadowBlur = 14;
+        }
         this.ctx.beginPath();
         this.ctx.roundRect(x - textWidth/2 - padX, y - 12 - padY, textWidth + padX * 2, 24 + padY, 12);
         this.ctx.fill();
         this.ctx.stroke();
 
-        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillStyle = isTarget ? '#FACC15' : '#FFFFFF';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(text, x, y);
