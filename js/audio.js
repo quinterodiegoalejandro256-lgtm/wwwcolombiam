@@ -160,6 +160,32 @@ class SoundController {
         });
     }
 
+    // Efecto de Celebración Especial de Animales (Armónicos alegres infantiles)
+    playAnimalCheer() {
+        if (!this.soundEnabled) return;
+        this.initAudioContext();
+        if (!this.ctx) return;
+
+        const notes = [698.46, 880.00, 1046.50, 1396.91]; // F5, A5, C6, F6
+        notes.forEach((freq, idx) => {
+            const now = this.ctx.currentTime + idx * 0.07;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.38);
+        });
+    }
+
     // Efecto de Error (Amable y suave para no desmotivar a los niños)
     playError() {
         if (!this.soundEnabled) return;
